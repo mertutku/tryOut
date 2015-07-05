@@ -26,7 +26,7 @@ import butterknife.InjectView;
  * Created by fangke on 2015/6/12.
  */
 public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener{
-    private static final int ANIMATED_ITEMS_COUNT = 2;
+        private static final int ANIMATED_ITEMS_COUNT = 2;
 
     private Context context;
     private ArrayList <Bitmap> bitmaps = new ArrayList<>();
@@ -66,7 +66,6 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        //
         runEnterAnimation(viewHolder.itemView, position);
         CellFeedViewHolder holder = (CellFeedViewHolder) viewHolder;
        // if (position % 2 == 0) {
@@ -130,7 +129,8 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     }
 
     public void updateItems() {
-        itemsCount = 10;
+
+        itemsCount++;
         fillLikesWithRandomValues();
         notifyDataSetChanged();
     }

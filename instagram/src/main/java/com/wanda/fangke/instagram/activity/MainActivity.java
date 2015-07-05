@@ -36,7 +36,6 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
 
     private FeedAdapter feedAdapter;
     private ArrayList<Bitmap> bitmaps;
-    private boolean isOk = false;
     private Boolean pendingIntroAnimation = false;
     private static final int ANIM_DURATION_TOOLBAR = 300;
     private static final int ANIM_DURATION_FAB = 400;
@@ -99,9 +98,10 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
 
                     bitmaps.add(loadedImage);
-                    if (isOk == false) {
+                    feedAdapter.updateItems();
+                    if (bitmaps.size()==1) {
+                        mainIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         startActivity(mainIntent);
-                        isOk = true;
                     }
                     //feedAdapter.notifyDataSetChanged();
 
@@ -112,10 +112,10 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
 
                 }
             });
-            final Intent loadingIntent = new Intent(this, LoadingActivity.class);
 
-            startActivity(loadingIntent);
         }
+        final Intent loadingIntent = new Intent(this, LoadingActivity.class);
+        startActivity(loadingIntent);
 
     }
 
@@ -153,7 +153,7 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
         btnCreate.animate().translationY(0)
                 .setInterpolator(new OvershootInterpolator(1.0f))
                 .setStartDelay(300).setDuration(ANIM_DURATION_FAB).start();
-        feedAdapter.updateItems();
+        //feedAdapter.updateItems();
     }
 
     @Override

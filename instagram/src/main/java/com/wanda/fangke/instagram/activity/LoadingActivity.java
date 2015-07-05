@@ -32,6 +32,14 @@ public class LoadingActivity extends Activity {
     }
 
     @Override
+    public void onPause(){
+        finish();
+        super.onPause();
+    }
+
+
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
