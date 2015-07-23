@@ -18,7 +18,7 @@ import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.oauth.InstagramService;
 
 public class LoginActivity extends Activity {
-    private static final Token EMPTY_TOKEN = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,27 +27,10 @@ public class LoginActivity extends Activity {
         final Button btnLogin = (Button) findViewById(R.id.btnLogin);
         btnLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                InstagramService service = new InstagramAuthService()
-                        .apiKey(Constants.CLIENT_ID)
-                        .apiSecret(Constants.CLIENT_SECRET)
-                        .callback(Constants.REDIRECT_URI)
-                        .build();
-
-
-                String authorizationUrl = service.getAuthorizationUrl(EMPTY_TOKEN);
-                Intent i = new Intent(getApplicationContext(), AuthPageActivity.class);
-                i.putExtra("URL", authorizationUrl);
-                startActivity(i);
+                startActivity(new Intent(getApplicationContext(), AuthPageActivity.class));
+                finish();
             }
         });
-
-
-        // Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-                .build();
-        ImageLoader il = ImageLoader.getInstance();
-        il.init(config);
-//        il.displayImage(Constants.IMAGES[0], (ImageView) findViewById(R.id.profilePhoto));
 
     }
 

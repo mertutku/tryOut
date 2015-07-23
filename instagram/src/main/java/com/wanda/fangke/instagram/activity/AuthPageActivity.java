@@ -13,6 +13,7 @@ import com.wanda.fangke.instagram.R;
 import com.wanda.fangke.instagram.instagramConstants.Constants;
 
 import org.jinstagram.Instagram;
+import org.jinstagram.auth.AccessTokenExtractor;
 import org.jinstagram.auth.InstagramAuthService;
 import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.model.Verifier;
@@ -23,13 +24,17 @@ import org.jinstagram.entity.common.Location;
 import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
+import org.jinstagram.model.QueryParam;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class AuthPageActivity extends ActionBarActivity {
     private static final Token EMPTY_TOKEN = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +44,7 @@ public class AuthPageActivity extends ActionBarActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 URLChecker task = new URLChecker();
-                task.execute(new String[] { url });
+                task.execute(new String[]{url});
             }
 
             @Override
@@ -49,15 +54,22 @@ public class AuthPageActivity extends ActionBarActivity {
                 }
                 return false;
             }
-
-            //deneme
-
-
         };
 
+        InstagramService service = new InstagramAuthService()
+                .apiKey(Constants.CLIENT_ID)
+                .apiSecret(Constants.CLIENT_SECRET)
+                .callback(Constants.REDIRECT_URI)
+                .build();
+
+
+        String authorizationUrl = service.getAuthorizationUrl(EMPTY_TOKEN); // EMPTY_TOKEN = null
         WebView wv = (WebView) findViewById(R.id.webView);
+        wv.setVerticalScrollBarEnabled(false);
+        wv.setHorizontalScrollBarEnabled(false);
+        wv.getSettings().setJavaScriptEnabled(true);
         wv.setWebViewClient(webViewClient);
-        wv.loadUrl(getIntent().getStringExtra("URL"));
+        wv.loadUrl(authorizationUrl);
     }
 
     @Override
@@ -90,6 +102,7 @@ public class AuthPageActivity extends ActionBarActivity {
             if (url.startsWith("http://www.mertutku.com")) {
                 int index = url.indexOf("code=");
                 if (index != -1) {
+
                     String verificationCode = url.substring(index + 5);
                     InstagramService service = new InstagramAuthService()
                             .apiKey(Constants.CLIENT_ID)
@@ -98,40 +111,14 @@ public class AuthPageActivity extends ActionBarActivity {
                             .build();
                     Verifier verifier = new Verifier(verificationCode);
                     Token accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
-                    Instagram instagram = new Instagram(accessToken);
-                    double latitude = 41.050972;
-                    double longitude = 28.98802;
-                    MediaFeed feed = null;
-                    try {
-                        feed = instagram.searchMedia(latitude, longitude);
-                    } catch (InstagramException e) {
-                        e.printStackTrace();
-                    }
-                    List<MediaFeedData> feeds = feed.getData();
-                    ArrayList<String> imageUrlList = new ArrayList<>();
-                    for (MediaFeedData mediaData : feeds) {
-
-                        System.out.println("-- Images --");
-                        Images images = mediaData.getImages();
-
-
-                        ImageData lowResolutionImg = images.getLowResolution();
-                        ImageData highResolutionImg = images.getStandardResolution();
-                        ImageData thumbnailImg = images.getThumbnail();
-                        imageUrlList.add(highResolutionImg.getImageUrl());
-
-                        Location location = mediaData.getLocation();
-                        System.out.println();
-                    }
                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                    i.putStringArrayListExtra("URLLIST", imageUrlList);
+                    i.putExtra("ACCESS_TOKEN", accessToken);
                     startActivity(i);
                     finish();
-
-
+                } else {
+                    finish(); //access denied therefore return to login activity
                 }
             }
-
             return null;
         }
 

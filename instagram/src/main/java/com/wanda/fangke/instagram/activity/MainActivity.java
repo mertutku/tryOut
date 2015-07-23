@@ -2,8 +2,10 @@ package com.wanda.fangke.instagram.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,17 +14,30 @@ import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.assist.LoadedFrom;
+import com.nostra13.universalimageloader.core.display.BitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 import com.wanda.fangke.instagram.R;
 import com.wanda.fangke.instagram.Utils;
 import com.wanda.fangke.instagram.adapter.FeedAdapter;
 import com.wanda.fangke.instagram.view.FeedContextMenu;
 import com.wanda.fangke.instagram.view.FeedContextMenuManager;
 
-import java.util.ArrayList;
+import org.jinstagram.Instagram;
+import org.jinstagram.auth.model.Token;
+import org.jinstagram.entity.users.feed.MediaFeed;
+import org.jinstagram.entity.users.feed.MediaFeedData;
+import org.jinstagram.exceptions.InstagramException;
+import org.jinstagram.model.QueryParam;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.InjectView;
 
@@ -35,7 +50,7 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
     ImageButton btnCreate;
 
     private FeedAdapter feedAdapter;
-    private ArrayList<Bitmap> bitmaps;
+    private List<MediaFeedData> feeds;
     private Boolean pendingIntroAnimation = false;
     private static final int ANIM_DURATION_TOOLBAR = 300;
     private static final int ANIM_DURATION_FAB = 400;
@@ -50,6 +65,12 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
         }
     }
 
+    private void retrieveFeed() {
+        final Intent loadingIntent = new Intent(this, LoadingActivity.class);
+        startActivity(loadingIntent); // will stay until mediaFeedData arrives
+        new RetrieveFeedTask(this).execute();
+    }
+
     private void setupFeed() {
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this) {
@@ -58,9 +79,9 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
                 return 300;
             }
         };
-        convertUrlToBitMap();
+        retrieveFeed();
         rvFeed.setLayoutManager(linearLayoutManager);
-        feedAdapter = new FeedAdapter(this, bitmaps);
+        feedAdapter = new FeedAdapter(this);
         rvFeed.setAdapter(feedAdapter);
         feedAdapter.setOnFeedItemClickListener(this);
         rvFeed.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -71,53 +92,6 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
         });
     }
 
-    private void convertUrlToBitMap() {
-        ArrayList<String> urlList = getIntent().getStringArrayListExtra("URLLIST");
-            ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-                .build();
-        ImageLoader il = ImageLoader.getInstance();
-        il.init(config);
-
-        final Intent mainIntent = new Intent(this, MainActivity.class);
-        bitmaps = new ArrayList<>();
-
-        for (String url : urlList) {
-            il.loadImage(url, new ImageLoadingListener() {
-                @Override
-                public void onLoadingStarted(String imageUri, View view) {
-
-
-                }
-
-                @Override
-                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-
-                }
-
-                @Override
-                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-
-                    bitmaps.add(loadedImage);
-                    feedAdapter.updateItems();
-                    if (bitmaps.size()==1) {
-                        mainIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        startActivity(mainIntent);
-                    }
-                    //feedAdapter.notifyDataSetChanged();
-
-                }
-
-                @Override
-                public void onLoadingCancelled(String imageUri, View view) {
-
-                }
-            });
-
-        }
-        final Intent loadingIntent = new Intent(this, LoadingActivity.class);
-        startActivity(loadingIntent);
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -190,5 +164,49 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
     @Override
     public void onCancelClick(int feedItem) {
 
+    }
+
+    private class RetrieveFeedTask extends AsyncTask<String, Void, String> {
+        private Context mContext;
+
+        public RetrieveFeedTask(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            Token accessToken = (Token) getIntent().getSerializableExtra("ACCESS_TOKEN");
+            Instagram instagram = new Instagram(accessToken);
+            double latitude = 38.614637;
+            double longitude = 27.4138042;
+            MediaFeed feed = null;
+            Map<String, String> options = new HashMap<>();
+
+            try {
+                options.put(QueryParam.COUNT, "2");
+                feed = instagram.searchMedia(latitude, longitude, options);
+            } catch (InstagramException e) {
+                e.printStackTrace();
+            }
+            feeds = feed.getData();
+
+            feedAdapter.setFeeds(feeds);
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    feedAdapter.notifyDataSetChanged();
+                }
+            });
+            final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+            mainIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(mainIntent);
+            return null;
+        }
     }
 }

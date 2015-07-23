@@ -9,13 +9,25 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextSwitcher;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedVignetteBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wanda.fangke.instagram.R;
 import com.wanda.fangke.instagram.Utils;
 
+import org.jinstagram.entity.users.feed.MediaFeedData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -25,11 +37,12 @@ import butterknife.InjectView;
 /**
  * Created by fangke on 2015/6/12.
  */
-public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener{
-        private static final int ANIMATED_ITEMS_COUNT = 2;
+public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
+    private static final int ANIMATED_ITEMS_COUNT = 2;
 
     private Context context;
-    private ArrayList <Bitmap> bitmaps = new ArrayList<>();
+    private List<MediaFeedData> feeds = new ArrayList<>();
+    private ImageLoader imageLoader;
     private int lastAnimatedPosition = -1;
     private int itemsCount = 0;
     private OnFeedItemClickListener onFeedItemClickListener;
@@ -37,9 +50,9 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     private final Map<Integer, Integer> likesCount = new HashMap<>();
     private final ArrayList<Integer> likedPositions = new ArrayList<>();
 
-    public FeedAdapter(Context context, ArrayList<Bitmap> bitmaps) {
+    public FeedAdapter(Context context) {
         this.context = context;
-        this.bitmaps = bitmaps;
+        configureUIL();
     }
 
     @Override
@@ -64,14 +77,48 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         }
     }
 
+    private void configureUIL() {
+        // Create global configuration and initialize ImageLoader with this config
+        DisplayImageOptions displayOptions = new DisplayImageOptions.Builder()
+                .cacheOnDisk(true)
+                .resetViewBeforeLoading(true)
+                .build();
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
+                .defaultDisplayImageOptions(displayOptions)
+                .diskCacheSize(50 * 1024 * 1024)
+                .diskCacheFileCount(100)
+                .writeDebugLogs()
+                .build();
+        imageLoader = ImageLoader.getInstance();
+        imageLoader.init(config);
+    }
+
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        runEnterAnimation(viewHolder.itemView, position);
-        CellFeedViewHolder holder = (CellFeedViewHolder) viewHolder;
-       // if (position % 2 == 0) {
-            holder.ivFeedCenter.setImageBitmap(bitmaps.get(position));
-            //holder.ivFeedCenter.setImageResource(R.mipmap.img_feed_center_1);
-            holder.ivFeedBottom.setImageResource(R.mipmap.img_feed_bottom_1);
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        //runEnterAnimation(viewHolder.itemView, position);
+        MediaFeedData feedData = feeds.get(position);
+        final CellFeedViewHolder holder = (CellFeedViewHolder) viewHolder;
+        holder.ivProgressBar.seti
+//        imageLoader.displayImage(feedData.getImages().getLowResolution().getImageUrl(), holder.ivFeedCenter, new ImageLoadingListener() {
+//            @Override
+//            public void onLoadingStarted(String imageUri, View view) {
+//
+//            }
+//
+//            @Override
+//            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+//            }
+//
+//            @Override
+//            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//            }
+//
+//            @Override
+//            public void onLoadingCancelled(String imageUri, View view) {
+//            }
+//        });
+        holder.ivFeedBottom.setImageResource(R.mipmap.img_feed_bottom_1);
 
         holder.ivFeedBottom.setOnClickListener(this);
         holder.btnMore.setOnClickListener(this);
@@ -80,29 +127,29 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         holder.btnLike.setOnClickListener(this);
         holder.btnLike.setTag(holder);
 
-        updateLikesCounter(holder,false);
+        updateLikesCounter(holder, false);
     }
 
 
     @Override
     public int getItemCount() {
-        return itemsCount;
+        return feeds.size();
     }
 
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == R.id.ivFeedBottom){
-            if(onFeedItemClickListener!=null){
-                onFeedItemClickListener.onCommentsClick(v,(Integer)v.getTag()); 
+        if (v.getId() == R.id.ivFeedBottom) {
+            if (onFeedItemClickListener != null) {
+                onFeedItemClickListener.onCommentsClick(v, (Integer) v.getTag());
             }
-        }else if(v.getId() == R.id.btnMore){
-            if(onFeedItemClickListener!=null){
+        } else if (v.getId() == R.id.btnMore) {
+            if (onFeedItemClickListener != null) {
                 onFeedItemClickListener.onMoreClick(v, (Integer) v.getTag());
             }
-        }else if(v.getId() == R.id.btnLike){
-            CellFeedViewHolder holder = (CellFeedViewHolder)v.getTag();
-            updateLikesCounter(holder,true);
+        } else if (v.getId() == R.id.btnLike) {
+            CellFeedViewHolder holder = (CellFeedViewHolder) v.getTag();
+            updateLikesCounter(holder, true);
         }
     }
 
@@ -121,6 +168,8 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         ImageView ivLike;
         @InjectView(R.id.tsLikesCounter)
         TextSwitcher tsLikesCounter;
+        @InjectView(R.id.ivProgressBar)
+        ProgressBar ivProgressBar;
 
         public CellFeedViewHolder(View view) {
             super(view);
@@ -128,36 +177,35 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         }
     }
 
-    public void updateItems() {
-
-        itemsCount++;
-        fillLikesWithRandomValues();
-        notifyDataSetChanged();
-    }
-
-    private void fillLikesWithRandomValues(){
-        for (int i = 0;i<getItemCount();i++){
-            likesCount.put(i,new Random().nextInt(100));
+    private void fillLikesWithRandomValues() {
+        for (int i = 0; i < getItemCount(); i++) {
+            likesCount.put(i, new Random().nextInt(100));
         }
     }
 
-    public void setOnFeedItemClickListener(OnFeedItemClickListener onFeedItemClickListener){
+    public void setOnFeedItemClickListener(OnFeedItemClickListener onFeedItemClickListener) {
         this.onFeedItemClickListener = onFeedItemClickListener;
     }
 
     public interface OnFeedItemClickListener {
-         void onCommentsClick(View v, int position);
-         void onMoreClick(View v,int position);
+        void onCommentsClick(View v, int position);
+
+        void onMoreClick(View v, int position);
     }
 
-    private void updateLikesCounter(CellFeedViewHolder holder,boolean animated){
-        int currentLikesCount = likesCount.get(holder.getPosition())+1;
+    private void updateLikesCounter(CellFeedViewHolder holder, boolean animated) {
+        int currentLikesCount = likesCount.get(holder.getPosition()) + 1;
         String likesCountText = context.getResources().getQuantityString(R.plurals.likes_count, currentLikesCount, currentLikesCount);
-        if(animated){
+        if (animated) {
             holder.tsLikesCounter.setText(likesCountText);
-        }else{
+        } else {
             holder.tsLikesCounter.setCurrentText(likesCountText);
         }
-        likesCount.put(holder.getPosition(),currentLikesCount);
+        likesCount.put(holder.getPosition(), currentLikesCount);
+    }
+
+    public void setFeeds(List<MediaFeedData> feeds) {
+        this.feeds = feeds;
+        fillLikesWithRandomValues();
     }
 }

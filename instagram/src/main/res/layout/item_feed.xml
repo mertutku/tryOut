@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?><!-- item_feed.xml -->
-<android.support.v7.widget.CardView
-    android:id="@+id/card_view"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:layout_margin="8dp"
     card_view:cardCornerRadius="4dp">
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,10 +19,9 @@
             android:id="@+id/ivUserProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/ic_feed_top"/>
+            android:src="@mipmap/ic_feed_top" />
 
-
-       <com.wanda.fangke.instagram.view.SquaredFrameLayout
+        <com.wanda.fangke.instagram.view.SquaredFrameLayout
             android:id="@+id/vImageRoot"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -30,14 +30,22 @@
                 android:id="@+id/ivFeedCenter"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"/>
+                android:scaleType="centerCrop" />
+
+            <ProgressBar
+                android:id="@+id/ivProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:visibility="visible" />
 
             <View
                 android:id="@+id/vBgLike"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/bg_like_circle_background"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/ivLike"
@@ -45,14 +53,14 @@
                 android:layout_height="match_parent"
                 android:scaleType="center"
                 android:src="@mipmap/ic_heart_outline_white"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </com.wanda.fangke.instagram.view.SquaredFrameLayout>
 
         <ImageView
             android:id="@+id/ivFeedBottom"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -60,26 +68,27 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
 
+
             <ImageButton
                 android:id="@+id/btnLike"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@android:color/transparent"
-                android:src="@mipmap/ic_heart_outline_grey"/>
+                android:src="@mipmap/ic_heart_outline_grey" />
 
             <ImageButton
                 android:id="@+id/btnComments"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/btn_feed_action"
-                android:src="@mipmap/ic_comment_outline_grey"/>
+                android:src="@mipmap/ic_comment_outline_grey" />
 
             <ImageButton
                 android:id="@+id/btnMore"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/btn_feed_action"
-                android:src="@mipmap/ic_more_grey"/>
+                android:src="@mipmap/ic_more_grey" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -90,7 +99,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_heart_small_blue"/>
+                    android:src="@mipmap/ic_heart_small_blue" />
 
                 <TextSwitcher
                     android:id="@+id/tsLikesCounter"
@@ -105,12 +114,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="123 likes"
-                        android:textColor="@color/text_like_counter"/>
+                        android:textColor="@color/text_like_counter" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_like_counter"/>
+                        android:textColor="@color/text_like_counter" />
                 </TextSwitcher>
             </LinearLayout>
         </LinearLayout>
