@@ -47,7 +47,6 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     private int itemsCount = 0;
     private OnFeedItemClickListener onFeedItemClickListener;
 
-    private final Map<Integer, Integer> likesCount = new HashMap<>();
     private final ArrayList<Integer> likedPositions = new ArrayList<>();
 
     public FeedAdapter(Context context) {
@@ -99,25 +98,27 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         //runEnterAnimation(viewHolder.itemView, position);
         MediaFeedData feedData = feeds.get(position);
         final CellFeedViewHolder holder = (CellFeedViewHolder) viewHolder;
-        holder.ivProgressBar.seti
-//        imageLoader.displayImage(feedData.getImages().getLowResolution().getImageUrl(), holder.ivFeedCenter, new ImageLoadingListener() {
-//            @Override
-//            public void onLoadingStarted(String imageUri, View view) {
-//
-//            }
-//
-//            @Override
-//            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-//            }
-//
-//            @Override
-//            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//            }
-//
-//            @Override
-//            public void onLoadingCancelled(String imageUri, View view) {
-//            }
-//        });
+        imageLoader.displayImage(feedData.getImages().getLowResolution().getImageUrl(), holder.ivFeedCenter, new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String imageUri, View view) {
+//                holder.ivProgressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+//                holder.ivProgressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                holder.ivProgressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onLoadingCancelled(String imageUri, View view) {
+//                holder.ivProgressBar.setVisibility(View.GONE);
+            }
+        });
         holder.ivFeedBottom.setImageResource(R.mipmap.img_feed_bottom_1);
 
         holder.ivFeedBottom.setOnClickListener(this);
@@ -126,8 +127,10 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         holder.btnMore.setTag(position);
         holder.btnLike.setOnClickListener(this);
         holder.btnLike.setTag(holder);
-
-        updateLikesCounter(holder, false);
+        holder.btnComments.setOnClickListener(this);
+        holder.btnComments.setTag(position);
+        int currentLikesCount = feedData.getLikes().getCount();
+        holder.tsLikesCounter.setCurrentText(context.getResources().getQuantityString(R.plurals.likes_count, currentLikesCount, currentLikesCount));
     }
 
 
@@ -138,8 +141,11 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     @Override
     public void onClick(View v) {
-
-        if (v.getId() == R.id.ivFeedBottom) {
+        if (v.getId() == R.id.btnComments) {
+            if (onFeedItemClickListener != null) {
+                onFeedItemClickListener.onCommentsClick(v, (Integer) v.getTag());
+            }
+        } else if (v.getId() == R.id.ivFeedBottom) {
             if (onFeedItemClickListener != null) {
                 onFeedItemClickListener.onCommentsClick(v, (Integer) v.getTag());
             }
@@ -151,6 +157,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             CellFeedViewHolder holder = (CellFeedViewHolder) v.getTag();
             updateLikesCounter(holder, true);
         }
+
     }
 
     public static class CellFeedViewHolder extends RecyclerView.ViewHolder {
@@ -170,6 +177,8 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         TextSwitcher tsLikesCounter;
         @InjectView(R.id.ivProgressBar)
         ProgressBar ivProgressBar;
+        @InjectView(R.id.btnComments)
+        ImageButton btnComments;
 
         public CellFeedViewHolder(View view) {
             super(view);
@@ -177,11 +186,6 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         }
     }
 
-    private void fillLikesWithRandomValues() {
-        for (int i = 0; i < getItemCount(); i++) {
-            likesCount.put(i, new Random().nextInt(100));
-        }
-    }
 
     public void setOnFeedItemClickListener(OnFeedItemClickListener onFeedItemClickListener) {
         this.onFeedItemClickListener = onFeedItemClickListener;
@@ -194,18 +198,20 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     }
 
     private void updateLikesCounter(CellFeedViewHolder holder, boolean animated) {
-        int currentLikesCount = likesCount.get(holder.getPosition()) + 1;
+        int currentLikesCount = feeds.get(holder.getPosition()).getLikes().getCount() + 1;
         String likesCountText = context.getResources().getQuantityString(R.plurals.likes_count, currentLikesCount, currentLikesCount);
         if (animated) {
             holder.tsLikesCounter.setText(likesCountText);
         } else {
             holder.tsLikesCounter.setCurrentText(likesCountText);
         }
-        likesCount.put(holder.getPosition(), currentLikesCount);
+
+        //todo instagram like action here
+        feeds.get(holder.getPosition()).getLikes().setCount(currentLikesCount);
     }
 
     public void setFeeds(List<MediaFeedData> feeds) {
         this.feeds = feeds;
-        fillLikesWithRandomValues();
+//        fillLikesWithRandomValues();
     }
 }

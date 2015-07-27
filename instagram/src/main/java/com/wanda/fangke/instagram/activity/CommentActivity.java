@@ -18,7 +18,10 @@ import android.widget.LinearLayout;
 import com.wanda.fangke.instagram.R;
 import com.wanda.fangke.instagram.Utils;
 import com.wanda.fangke.instagram.adapter.CommentsAdapter;
+import com.wanda.fangke.instagram.utils.CommentsWrapper;
 import com.wanda.fangke.instagram.view.SendCommentButton;
+
+import org.jinstagram.entity.common.Comments;
 
 import butterknife.InjectView;
 
@@ -30,7 +33,7 @@ public class CommentActivity extends BaseActivity implements SendCommentButton.O
     public static final String ARG_DRAWING_START_LOCATION = "arg_drawing_start_location";
     private int drawingStartLocation;
     private CommentsAdapter commentsAdapter;
-
+    private Comments comments;
     @InjectView(R.id.contentRoot)
     LinearLayout contentRoot;
     @InjectView(R.id.rvComments)
@@ -50,6 +53,8 @@ public class CommentActivity extends BaseActivity implements SendCommentButton.O
         setupSendCommentButton();
 
         drawingStartLocation = getIntent().getIntExtra(ARG_DRAWING_START_LOCATION, 0);
+        comments = ((CommentsWrapper) getIntent().getSerializableExtra("COMMENT")).getComments();
+        //commentsler geldi  haci
         if (savedInstanceState == null){
             contentRoot.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override

@@ -25,11 +25,13 @@ import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 import com.wanda.fangke.instagram.R;
 import com.wanda.fangke.instagram.Utils;
 import com.wanda.fangke.instagram.adapter.FeedAdapter;
+import com.wanda.fangke.instagram.utils.CommentsWrapper;
 import com.wanda.fangke.instagram.view.FeedContextMenu;
 import com.wanda.fangke.instagram.view.FeedContextMenuManager;
 
 import org.jinstagram.Instagram;
 import org.jinstagram.auth.model.Token;
+import org.jinstagram.entity.common.Comments;
 import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
@@ -79,7 +81,6 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
                 return 300;
             }
         };
-        retrieveFeed();
         rvFeed.setLayoutManager(linearLayoutManager);
         feedAdapter = new FeedAdapter(this);
         rvFeed.setAdapter(feedAdapter);
@@ -90,6 +91,7 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
                 FeedContextMenuManager.getManager().onScrolled(recyclerView, dx, dy);
             }
         });
+        retrieveFeed();
     }
 
 
@@ -98,7 +100,7 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
         super.onCreateOptionsMenu(menu);
         if (pendingIntroAnimation) {
             pendingIntroAnimation = false;
-            startIntroAnimation();
+            //startIntroAnimation();
         }
         return true;
     }
@@ -133,10 +135,13 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
     @Override
     public void onCommentsClick(View v, int position) {
         final Intent intent = new Intent(this, CommentActivity.class);
-
+        Comments comments = feeds.get(position).getComments();
         int[] startingLocation = new int[2];
         v.getLocationOnScreen(startingLocation);
         intent.putExtra(CommentActivity.ARG_DRAWING_START_LOCATION, startingLocation[1]);
+        CommentsWrapper commentWrap = new CommentsWrapper();
+        commentWrap.setComments(comments);
+        intent.putExtra("COMMENT", commentWrap);
         startActivity(intent);
         overridePendingTransition(0, 0);
     }
@@ -182,30 +187,23 @@ public class MainActivity extends BaseActivity implements FeedAdapter.OnFeedItem
         protected String doInBackground(String... params) {
             Token accessToken = (Token) getIntent().getSerializableExtra("ACCESS_TOKEN");
             Instagram instagram = new Instagram(accessToken);
-            double latitude = 38.614637;
-            double longitude = 27.4138042;
+            double latitude = 41.075425;
+            double longitude = 29.034963;
             MediaFeed feed = null;
             Map<String, String> options = new HashMap<>();
 
             try {
-                options.put(QueryParam.COUNT, "2");
+                options.put(QueryParam.COUNT, "10");
                 feed = instagram.searchMedia(latitude, longitude, options);
             } catch (InstagramException e) {
                 e.printStackTrace();
             }
             feeds = feed.getData();
-
             feedAdapter.setFeeds(feeds);
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    feedAdapter.notifyDataSetChanged();
-                }
-            });
             final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
             mainIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(mainIntent);
+
             return null;
         }
     }
