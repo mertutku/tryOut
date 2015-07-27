@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="C:\Users\mert.tunc\StudioProjects\tryOut\camera\assets"/></dataSet><dataSet config="debug"><source path="C:\Users\mert.tunc\StudioProjects\tryOut\camera\build-types\debug\assets"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="E:\AndroidStudio\tryOut\camera\assets"/></dataSet><dataSet config="debug"><source path="E:\AndroidStudio\tryOut\camera\build-types\debug\assets"/></dataSet></merger>

@@ -11,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextSwitcher;
+import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -131,6 +132,32 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         holder.btnComments.setTag(position);
         int currentLikesCount = feedData.getLikes().getCount();
         holder.tsLikesCounter.setCurrentText(context.getResources().getQuantityString(R.plurals.likes_count, currentLikesCount, currentLikesCount));
+
+        holder.tvUsername.setText(feedData.getUser().getUserName());
+
+        imageLoader.displayImage(feedData.getUser().getProfilePictureUrl(), holder.ivProfilePhoto, new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String imageUri, View view) {
+
+            }
+
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+
+            }
+
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+
+            }
+
+            @Override
+            public void onLoadingCancelled(String imageUri, View view) {
+
+            }
+        });
+
+
     }
 
 
@@ -179,6 +206,10 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         ProgressBar ivProgressBar;
         @InjectView(R.id.btnComments)
         ImageButton btnComments;
+        @InjectView(R.id.ivProfilePhoto)
+        ImageView ivProfilePhoto;
+        @InjectView(R.id.tvUsername)
+        TextView tvUsername;
 
         public CellFeedViewHolder(View view) {
             super(view);
